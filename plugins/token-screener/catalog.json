@@ -1,0 +1,16 @@
+{
+  "displayName": "Token Screener",
+  "summary": "See exactly where your Claude spend goes, and which of it you could have avoided.",
+  "category": "optimization",
+  "audience": ["operator", "developer"],
+  "surfaces": ["cli"],
+  "tier": "free",
+  "featured": true,
+  "highlights": [
+    "Splits spend into input, output, cache-write and cache-read, priced and ranked",
+    "Groups every turn under the prompt that started it, so cost maps to work",
+    "Seven detectors that each name a saving with the evidence behind it"
+  ],
+  "requires": "python3 (already on macOS and Linux). Reads ~/.claude/projects only. No network.",
+  "notes": "Reads Claude Code's local transcripts, so it runs in the CLI only. There is nothing for it to read inside the Desktop or web sandbox."
+}

@@ -1,0 +1,19 @@
+{
+  "name": "token-screener",
+  "version": "1.1.0",
+  "description": "Screen your Claude Code token usage: where it went, which tasks and tools consumed it, and where it is avoidable. Local transcripts only - no network.",
+  "author": {
+    "name": "ClaudeSkill",
+    "url": "https://claudeskill.co"
+  },
+  "homepage": "https://claudeskill.co/skills/token-screener",
+  "repository": "https://github.com/claudeskill-co/skills",
+  "license": "BUSL-1.1",
+  "keywords": [
+    "tokens",
+    "cost",
+    "usage",
+    "analytics",
+    "optimization"
+  ]
+}

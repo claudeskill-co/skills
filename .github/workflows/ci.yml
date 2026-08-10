@@ -1,0 +1,63 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+jobs:
+  catalogue:
+    name: validate catalogue
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate skill frontmatter and identity
+        run: node scripts/validate-skills.mjs
+      - name: Fail if marketplace.json or registry.json is stale
+        run: node scripts/gen-registry.mjs --check
+      - name: Package skills for the upload surfaces
+        run: node scripts/build-zips.mjs
+
+  token-screener:
+    name: token-screener tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: plugins/token-screener
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run tests (stdlib only, no install step)
+        run: python -m unittest discover -s tests -v
+      - name: Verify the tool runs with no transcript data
+        run: python skills/token-screener/scripts/screen.py --root /nonexistent --all-projects
+
+  release:
+    name: publish zips
+    needs: [catalogue, token-screener]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/build-zips.mjs
+      - name: Attach zips to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.zip
+          fail_on_unmatched_files: false
+          generate_release_notes: true

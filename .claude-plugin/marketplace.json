@@ -1,0 +1,35 @@
+{
+  "name": "claudeskill",
+  "owner": {
+    "name": "ClaudeSkill",
+    "email": "hello@claudeskill.co",
+    "url": "https://claudeskill.co"
+  },
+  "metadata": {
+    "description": "Installable Claude skills for D2C and ecommerce operators.",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "token-screener",
+      "source": "token-screener",
+      "displayName": "Token Screener",
+      "description": "Screen your Claude Code token usage: where it went, which tasks and tools consumed it, and where it is avoidable. Local transcripts only - no network.",
+      "version": "1.1.0",
+      "author": {
+        "name": "ClaudeSkill",
+        "url": "https://claudeskill.co"
+      },
+      "homepage": "https://claudeskill.co/skills/token-screener",
+      "license": "BUSL-1.1",
+      "category": "optimization",
+      "tags": [
+        "tokens",
+        "cost",
+        "usage",
+        "analytics",
+        "optimization"
+      ]
+    }
+  ]
+}
