@@ -37,7 +37,6 @@ const marketplace = {
   owner: OWNER,
   metadata: {
     description: "Installable Claude skills for D2C and ecommerce operators.",
-    pluginRoot: "./plugins",
   },
   plugins: plugins.map(toMarketplaceEntry),
 };

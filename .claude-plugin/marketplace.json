@@ -6,13 +6,12 @@
     "url": "https://claudeskill.co"
   },
   "metadata": {
-    "description": "Installable Claude skills for D2C and ecommerce operators.",
-    "pluginRoot": "./plugins"
+    "description": "Installable Claude skills for D2C and ecommerce operators."
   },
   "plugins": [
     {
       "name": "token-screener",
-      "source": "token-screener",
+      "source": "./plugins/token-screener",
       "displayName": "Token Screener",
       "description": "Screen your Claude Code token usage: where it went, which tasks and tools consumed it, and where it is avoidable. Local transcripts only - no network.",
       "version": "1.1.0",

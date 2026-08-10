@@ -11,7 +11,8 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-export const PLUGINS_DIR = join(ROOT, "plugins");
+export const PLUGIN_DIR_NAME = "plugins";
+export const PLUGINS_DIR = join(ROOT, PLUGIN_DIR_NAME);
 
 export const MARKETPLACE_NAME = "claudeskill";
 export const GITHUB_SLUG = "claudeskill-co/skills";
@@ -128,7 +129,11 @@ export function toRegistryEntry({ slug, plugin, catalog, skills }) {
 export function toMarketplaceEntry({ slug, plugin, catalog }) {
   return {
     name: slug,
-    source: slug,
+    // Full path from the marketplace root, deliberately not relying on
+    // metadata.pluginRoot: `claude plugin validate` accepts a bare slug there,
+    // but `claude plugin install` then resolves it against the repository root
+    // and fails. Verified by installing, not by reading the schema.
+    source: `./${PLUGIN_DIR_NAME}/${slug}`,
     displayName: catalog.displayName ?? slug,
     description: plugin.description,
     version: plugin.version,
