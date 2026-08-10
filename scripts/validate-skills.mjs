@@ -8,9 +8,28 @@
  *     node scripts/validate-skills.mjs
  */
 
-import { existsSync, readFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { extname, join, relative } from "node:path";
 import { readPlugins, ROOT, VALID_SURFACES, VALID_TIERS } from "./lib/catalog.mjs";
+
+/** Names that must never reach a public repository. */
+const PERSONAL = /puneet[- ]?sharma(?:-18)?|puneet|sharma|psharma/i;
+
+const TEXT_EXTENSIONS = new Set([
+  ".md", ".json", ".py", ".js", ".mjs", ".ts", ".sh", ".txt", ".yml", ".yaml", ".csv", ".toml",
+]);
+const SKIP_DIRS = new Set(["__pycache__", "node_modules", ".git", "dist"]);
+
+function* textFilesUnder(dir) {
+  for (const entry of readdirSync(dir)) {
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) {
+      if (!SKIP_DIRS.has(entry)) yield* textFilesUnder(path);
+    } else if (TEXT_EXTENSIONS.has(extname(entry))) {
+      yield path;
+    }
+  }
+}
 
 const errors = [];
 const warnings = [];
@@ -116,12 +135,11 @@ for (const entry of plugins) {
   }
 
   // --- no personal identifiers anywhere in the shipped files ---
-  const shipped = [join(dir, ".claude-plugin", "plugin.json"), join(dir, "catalog.json")];
-  for (const skill of skills) shipped.push(join(skill.dir, "SKILL.md"));
-  for (const path of shipped) {
-    if (!existsSync(path)) continue;
-    const text = readFileSync(path, "utf8");
-    const hit = /puneet|sharma|puneet-sharma-18/i.exec(text);
+  // Every text file under the plugin, not just the manifests: a skill ships its
+  // scripts and reference material too, and those are equally public.
+  for (const path of textFilesUnder(dir)) {
+    const hit = PERSONAL.exec(readFileSync(path, "utf8"));
+    PERSONAL.lastIndex = 0;
     if (hit) {
       fail(relative(ROOT, path), `contains a personal identifier ("${hit[0]}")`);
     }

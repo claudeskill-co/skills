@@ -1,0 +1,16 @@
+{
+  "displayName": "Unit Economics",
+  "summary": "What an order actually earns once GST, shipping, payment fees and COD returns are taken out.",
+  "category": "finance",
+  "audience": ["operator"],
+  "surfaces": ["cli", "desktop", "web"],
+  "tier": "free",
+  "featured": true,
+  "highlights": [
+    "CM1, CM2 and CM3 per order, with GST stripped out of revenue where it belongs",
+    "Models COD and prepaid separately, then blends them - including what RTO costs you",
+    "Gives you the most you can pay per order, the breakeven ROAS, and the discount floor"
+  ],
+  "requires": "Nothing. Runs on the figures you give it, or a CSV of your catalogue.",
+  "notes": "Estimates from the numbers you supply, not accounts. GST input credit on costs is not modelled, and returns are treated as stock recovered with freight lost."
+}

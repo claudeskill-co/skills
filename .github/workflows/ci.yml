@@ -22,15 +22,18 @@ jobs:
       - name: Package skills for the upload surfaces
         run: node scripts/build-zips.mjs
 
-  token-screener:
-    name: token-screener tests
+  tests:
+    # Every plugin that ships a tests/ directory, on every supported Python.
+    # Adding a plugin adds it here by name so a new skill cannot land untested.
+    name: ${{ matrix.plugin }} tests
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: plugins/token-screener
+        working-directory: plugins/${{ matrix.plugin }}
     strategy:
       fail-fast: false
       matrix:
+        plugin: [token-screener, unit-economics]
         python-version: ["3.9", "3.11", "3.13"]
     steps:
       - uses: actions/checkout@v4
@@ -39,12 +42,26 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Run tests (stdlib only, no install step)
         run: python -m unittest discover -s tests -v
-      - name: Verify the tool runs with no transcript data
+
+  smoke:
+    name: scripts run with no input
+    needs: [tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: token-screener handles an empty transcript directory
+        working-directory: plugins/token-screener
         run: python skills/token-screener/scripts/screen.py --root /nonexistent --all-projects
+      - name: unit-economics produces a report from two figures
+        working-directory: plugins/unit-economics
+        run: python skills/unit-economics/scripts/unit_economics.py --price 1499 --cogs 420
 
   release:
     name: publish zips
-    needs: [catalogue, token-screener]
+    needs: [catalogue, tests, smoke]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:

@@ -29,6 +29,30 @@
         "analytics",
         "optimization"
       ]
+    },
+    {
+      "name": "unit-economics",
+      "source": "./plugins/unit-economics",
+      "displayName": "Unit Economics",
+      "description": "Work out what a D2C order actually earns after GST, product cost, packing, shipping, payment fees, COD returns and marketing: CM1/CM2/CM3, max CAC, breakeven ROAS and the discount floor.",
+      "version": "1.0.0",
+      "author": {
+        "name": "ClaudeSkill",
+        "url": "https://claudeskill.co"
+      },
+      "homepage": "https://claudeskill.co/skills/unit-economics",
+      "license": "BUSL-1.1",
+      "category": "finance",
+      "tags": [
+        "d2c",
+        "ecommerce",
+        "margin",
+        "unit-economics",
+        "cac",
+        "roas",
+        "rto",
+        "pricing"
+      ]
     }
   ]
 }

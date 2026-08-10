@@ -1,5 +1,7 @@
 __pycache__/
 *.pyc
-*.html
 dist/
 .DS_Store
+
+# Generated reports from token-screener runs; never commit one.
+plugins/token-screener/**/*.html

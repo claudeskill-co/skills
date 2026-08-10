@@ -42,6 +42,45 @@
         "zip": null
       },
       "source": "https://github.com/claudeskill-co/skills/tree/main/plugins/token-screener"
+    },
+    {
+      "slug": "unit-economics",
+      "displayName": "Unit Economics",
+      "summary": "What an order actually earns once GST, shipping, payment fees and COD returns are taken out.",
+      "description": "Work out what a D2C order actually earns after GST, product cost, packing, shipping, payment fees, COD returns and marketing: CM1/CM2/CM3, max CAC, breakeven ROAS and the discount floor.",
+      "category": "finance",
+      "audience": [
+        "operator"
+      ],
+      "surfaces": [
+        "cli",
+        "desktop",
+        "web"
+      ],
+      "tier": "free",
+      "featured": true,
+      "version": "1.0.0",
+      "highlights": [
+        "CM1, CM2 and CM3 per order, with GST stripped out of revenue where it belongs",
+        "Models COD and prepaid separately, then blends them - including what RTO costs you",
+        "Gives you the most you can pay per order, the breakeven ROAS, and the discount floor"
+      ],
+      "requires": "Nothing. Runs on the figures you give it, or a CSV of your catalogue.",
+      "notes": "Estimates from the numbers you supply, not accounts. GST input credit on costs is not modelled, and returns are treated as stock recovered with freight lost.",
+      "skills": [
+        {
+          "name": "unit-economics",
+          "description": "Work out what a D2C order actually earns after GST, product cost, packing, shipping, payment fees, COD returns and marketing - CM1/CM2/CM3, the most you can pay to acquire a customer, breakeven ROAS, and how deep a discount can go before the order loses money. Use when the user asks about margin, unit economics, contribution margin, CM1/CM2/CM3, breakeven ROAS, max CAC, whether a product or a discount is profitable, what RTO is costing them, or how to price a SKU.",
+          "zip": "https://github.com/claudeskill-co/skills/releases/latest/download/unit-economics.zip"
+        }
+      ],
+      "install": {
+        "marketplace": "claudeskill",
+        "marketplaceAdd": "/plugin marketplace add claudeskill-co/skills",
+        "pluginInstall": "/plugin install unit-economics@claudeskill",
+        "zip": "https://github.com/claudeskill-co/skills/releases/latest/download/unit-economics.zip"
+      },
+      "source": "https://github.com/claudeskill-co/skills/tree/main/plugins/unit-economics"
     }
   ]
 }

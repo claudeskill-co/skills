@@ -14,7 +14,7 @@ the CLI, the desktop app, or claude.ai in a browser.
 
 ```
 /plugin marketplace add claudeskill-co/skills
-/plugin install token-screener@claudeskill
+/plugin install unit-economics@claudeskill
 ```
 
 `/plugin marketplace update claudeskill` pulls new skills as they land.
@@ -43,6 +43,7 @@ zip, and their page says so rather than offering a download that would do nothin
 
 | Skill | What it does | Surfaces |
 |---|---|---|
+| [unit-economics](plugins/unit-economics) | What an order actually earns after GST, shipping, payment fees and COD returns | CLI, Desktop, web |
 | [token-screener](plugins/token-screener) | Where your Claude spend went, and which of it was avoidable | CLI |
 
 `registry.json` is the machine-readable version of that table, and the website

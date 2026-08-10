@@ -6,6 +6,26 @@ this project uses [Semantic Versioning](https://semver.org/).
 
 Individual skills carry their own versions in `plugins/<slug>/.claude-plugin/plugin.json`.
 
+## [2.1.0] - 2026-08-10
+
+### Added
+- **unit-economics** - per-order margin for a D2C brand. Strips GST out of
+  revenue, models prepaid and COD orders separately (including what RTO
+  actually costs), and returns CM1/CM2/CM3, the most you can pay to acquire an
+  order, breakeven ROAS and the discount floor. 36 tests.
+
+  It is the first skill in the catalogue that runs on the upload surfaces, so
+  it is also the first real exercise of the zip pipeline - previously the
+  Desktop and claude.ai install path was advertised but never executed.
+
+### Changed
+- CI runs each plugin's tests as a matrix rather than naming one plugin, so a
+  new skill cannot land untested, and smoke-runs both scripts with no input.
+- The identity check in `validate-skills.mjs` now scans every text file under a
+  plugin, not just its manifests and SKILL.md.
+- LICENSE names the catalogue rather than a single tool, and gives the licensor
+  a contact address.
+
 ## [2.0.0] - 2026-08-10
 
 The repository became a multi-skill catalogue under the ClaudeSkill name.
