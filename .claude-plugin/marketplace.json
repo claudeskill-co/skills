@@ -6,9 +6,32 @@
     "url": "https://claudeskill.co"
   },
   "metadata": {
-    "description": "Installable Claude skills for D2C and ecommerce operators."
+    "description": "Pre-flight checks for apps built fast: find what will break you before you ship."
   },
   "plugins": [
+    {
+      "name": "rls-audit",
+      "source": "./plugins/rls-audit",
+      "displayName": "RLS Audit",
+      "description": "Audit a Supabase or Postgres app for access-control holes before it ships: tables with row level security off, policies that let everyone through, service role keys reachable from the browser, and paywalls enforced only in client code. Local files only - no network.",
+      "version": "1.0.0",
+      "author": {
+        "name": "ClaudeSkill",
+        "url": "https://claudeskill.co"
+      },
+      "homepage": "https://claudeskill.co/skills/rls-audit",
+      "license": "MIT",
+      "category": "security",
+      "tags": [
+        "security",
+        "supabase",
+        "rls",
+        "postgres",
+        "auth",
+        "audit",
+        "pre-launch"
+      ]
+    },
     {
       "name": "token-screener",
       "source": "./plugins/token-screener",

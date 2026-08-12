@@ -36,7 +36,7 @@ const marketplace = {
   name: MARKETPLACE_NAME,
   owner: OWNER,
   metadata: {
-    description: "Installable Claude skills for D2C and ecommerce operators.",
+    description: "Pre-flight checks for apps built fast: find what will break you before you ship.",
   },
   plugins: plugins.map(toMarketplaceEntry),
 };

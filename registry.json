@@ -6,6 +6,44 @@
   "marketplace": "claudeskill",
   "skills": [
     {
+      "slug": "rls-audit",
+      "displayName": "RLS Audit",
+      "summary": "Find the access-control holes that get shipped apps breached, before you ship.",
+      "description": "Audit a Supabase or Postgres app for access-control holes before it ships: tables with row level security off, policies that let everyone through, service role keys reachable from the browser, and paywalls enforced only in client code. Local files only - no network.",
+      "category": "security",
+      "audience": [
+        "developer"
+      ],
+      "surfaces": [
+        "cli"
+      ],
+      "tier": "free",
+      "featured": true,
+      "version": "1.0.0",
+      "highlights": [
+        "Every table in the public schema without row level security, named and located",
+        "Policies that are technically on but let everyone through - using (true), with check (true)",
+        "Service role keys sitting anywhere the browser can read them, including client components",
+        "Separates what is proven from what is pattern-matched, and never fails a build on a guess"
+      ],
+      "requires": "python3 (already on macOS and Linux). Reads your project files only. No network.",
+      "notes": "Static analysis of migration files and source. Tables created through the Supabase dashboard rather than a migration are invisible to it, and a clean result is not a guarantee - the report says so itself.",
+      "skills": [
+        {
+          "name": "rls-audit",
+          "description": "Audit a Supabase or Postgres app for access-control holes before it ships - tables with row level security switched off, policies that let everyone through, service role keys reachable from the browser, and paywalls enforced only in client code. Use when the user asks whether their app is safe to launch, mentions RLS, row level security, Supabase policies, a security or pre-launch audit, a leaked or exposed API key, whether their paywall or auth can be bypassed, or says they are about to deploy or go live.",
+          "zip": null
+        }
+      ],
+      "install": {
+        "marketplace": "claudeskill",
+        "marketplaceAdd": "/plugin marketplace add claudeskill-co/skills",
+        "pluginInstall": "/plugin install rls-audit@claudeskill",
+        "zip": null
+      },
+      "source": "https://github.com/claudeskill-co/skills/tree/main/plugins/rls-audit"
+    },
+    {
       "slug": "token-screener",
       "displayName": "Token Screener",
       "summary": "See exactly where your Claude spend goes, and which of it you could have avoided.",
