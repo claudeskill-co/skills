@@ -123,6 +123,45 @@
       "source": "https://github.com/claudeskill-co/skills/tree/main/plugins/secret-sweep"
     },
     {
+      "slug": "stripe-check",
+      "displayName": "Stripe Check",
+      "summary": "Find the payment defects that cost money quietly, before real cards hit them.",
+      "signature": "12 rule codes, file and line on every finding",
+      "description": "Audit a Stripe integration before it takes real money: webhooks that never verify a signature, charge amounts the customer controls, secret keys reachable from the browser, and fulfilment that depends on the buyer's tab staying open. Local files only - no network, no Stripe API calls.",
+      "category": "security",
+      "audience": [
+        "developer"
+      ],
+      "surfaces": [
+        "cli"
+      ],
+      "tier": "free",
+      "featured": true,
+      "version": "1.0.0",
+      "highlights": [
+        "Webhook handlers that never verify a signature - a public endpoint anyone can POST a paid event to",
+        "Charge amounts read out of the request body, where the customer picks their own price",
+        "Live secret keys in source, in the example env file, or in a browser-exposed variable",
+        "Grants written with no event id, so one Stripe retry ships the order twice"
+      ],
+      "requires": "python3 (already on macOS and Linux). Reads your project files only. No network, and no Stripe API calls.",
+      "notes": "Static analysis of your source. It cannot tell whether the webhook is registered in the Stripe dashboard at all - the most common silent failure - and it checks Stripe only, not Razorpay, Polar or Paddle.",
+      "skills": [
+        {
+          "name": "stripe-check",
+          "description": "Audit a Stripe integration for the defects that quietly cost money - webhooks that never verify a signature, charge amounts the customer controls, secret keys in the browser bundle, and fulfilment that depends on the buyer's tab staying open. Use when the user asks whether their payments are safe or set up correctly, mentions Stripe, checkout, webhooks, subscriptions, a signature verification error, double charges, orders that were paid but not fulfilled, or says they are about to take real payments or go live.",
+          "zip": null
+        }
+      ],
+      "install": {
+        "marketplace": "claudeskill",
+        "marketplaceAdd": "/plugin marketplace add claudeskill-co/skills",
+        "pluginInstall": "/plugin install stripe-check@claudeskill",
+        "zip": null
+      },
+      "source": "https://github.com/claudeskill-co/skills/tree/main/plugins/stripe-check"
+    },
+    {
       "slug": "token-screener",
       "displayName": "Token Screener",
       "summary": "See exactly where your Claude spend goes, and which of it you could have avoided.",
