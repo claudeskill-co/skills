@@ -61,9 +61,25 @@ zip, and their page says so rather than offering a download that would do nothin
 |---|---|---|
 | [rls-audit](plugins/rls-audit) | Tables with row level security off, policies that let everyone through, keys the browser can read, paywalls enforced only in client code | CLI |
 | [secret-sweep](plugins/secret-sweep) | Credentials in source, in browser-exposed variables, in Docker and CI, and in git history after you deleted them | CLI |
+| [db-guard](plugins/db-guard) | **Blocks** DROP, TRUNCATE and WHERE-less DELETE against anything that is not clearly a local database — before the command runs | CLI |
 
-More landing here: `db-guard`, `stripe-check`, `deploy-check`, and `ship-check`
-to run the lot as one gate.
+More landing here: `stripe-check`, `deploy-check`, and `ship-check` to run the
+lot as one gate.
+
+`db-guard` is the one that stops something rather than reporting it. It installs
+a `PreToolUse` hook, so a destructive command aimed at production never
+executes:
+
+```
+$ supabase db reset --linked
+db-guard: deny (supabase-db-reset)
+Blocked: this drops and recreates the whole database, against a production or
+remote database. If that is genuinely what you want, run it yourself outside
+the agent - and take a backup first.
+```
+
+Destructive but clearly local? It asks instead of blocking — resetting a dev
+database is normal work, and a guard that blocks normal work gets switched off.
 
 ### Everything else
 

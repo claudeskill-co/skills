@@ -6,6 +6,44 @@
   "marketplace": "claudeskill",
   "skills": [
     {
+      "slug": "db-guard",
+      "displayName": "DB Guard",
+      "summary": "Stops an agent dropping a database it should never have been pointed at.",
+      "description": "Block destructive database commands before they run: DROP, TRUNCATE, unqualified DELETE or UPDATE, and resets like supabase db reset, whenever they are aimed at anything that is not clearly a local development database. Runs as a PreToolUse hook. Local only - no network.",
+      "category": "security",
+      "audience": [
+        "developer"
+      ],
+      "surfaces": [
+        "cli"
+      ],
+      "tier": "free",
+      "featured": true,
+      "version": "1.0.0",
+      "highlights": [
+        "Runs as a PreToolUse hook, so a destructive command is stopped rather than reported",
+        "Blocks DROP, TRUNCATE and WHERE-less DELETE or UPDATE against anything not clearly local",
+        "Asks instead of blocking when the target is a local database, because resetting dev is normal work",
+        "Treats a connection it cannot read as production - $DATABASE_URL is not a safe assumption"
+      ],
+      "requires": "python3 (already on macOS and Linux). Claude Code, for the hook. No network.",
+      "notes": "It reads the command, not the database. SQL inside a file passed with psql -f is invisible to it, as is anything that does not go through Bash. It is a speed bump on an irreversible action, not a backup.",
+      "skills": [
+        {
+          "name": "db-guard",
+          "description": "Block destructive database commands before they run - DROP, TRUNCATE, unqualified DELETE or UPDATE, and resets like supabase db reset or prisma migrate reset - whenever they are aimed at anything that is not clearly a local development database. Use when the user asks to protect their database, mentions dropping or truncating tables, resetting or wiping a database, running a migration against production, is worried an agent will delete their data, or asks what db-guard blocked and why.",
+          "zip": null
+        }
+      ],
+      "install": {
+        "marketplace": "claudeskill",
+        "marketplaceAdd": "/plugin marketplace add claudeskill-co/skills",
+        "pluginInstall": "/plugin install db-guard@claudeskill",
+        "zip": null
+      },
+      "source": "https://github.com/claudeskill-co/skills/tree/main/plugins/db-guard"
+    },
+    {
       "slug": "rls-audit",
       "displayName": "RLS Audit",
       "summary": "Find the access-control holes that get shipped apps breached, before you ship.",

@@ -10,6 +10,29 @@
   },
   "plugins": [
     {
+      "name": "db-guard",
+      "source": "./plugins/db-guard",
+      "displayName": "DB Guard",
+      "description": "Block destructive database commands before they run: DROP, TRUNCATE, unqualified DELETE or UPDATE, and resets like supabase db reset, whenever they are aimed at anything that is not clearly a local development database. Runs as a PreToolUse hook. Local only - no network.",
+      "version": "1.0.0",
+      "author": {
+        "name": "ClaudeSkill",
+        "url": "https://claudeskill.co"
+      },
+      "homepage": "https://claudeskill.co/skills/db-guard",
+      "license": "MIT",
+      "category": "security",
+      "tags": [
+        "security",
+        "database",
+        "postgres",
+        "supabase",
+        "hooks",
+        "safety",
+        "production"
+      ]
+    },
+    {
       "name": "rls-audit",
       "source": "./plugins/rls-audit",
       "displayName": "RLS Audit",
