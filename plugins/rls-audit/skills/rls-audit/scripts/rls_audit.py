@@ -73,14 +73,39 @@ class Finding:
         }
 
 
+# A schema under tests/, fixtures/ or demo/ is usually meant to be broken -
+# it is the sample a test asserts against. Reporting it at the same severity
+# as a real migration is how a scanner ends up grading a project BLOCKED for
+# shipping a test suite. Downgraded, never silenced: a real key or a real
+# table does leak from a fixture directory too.
+TEST_PATH_RE = re.compile(
+    r"(^|/)(tests?|__tests__|spec|specs|fixtures?|e2e|mocks?|examples?|demo|samples?)(/|$)"
+    r"|\.(test|spec)\.[a-z]+$",
+    re.I,
+)
+
+
+def is_test_path(rel: str) -> bool:
+    return bool(TEST_PATH_RE.search(rel.replace(os.sep, "/")))
+
+
+TEST_NOTE = (" Found under a test, fixture or demo path, where a deliberately broken schema is "
+             "normal - confirm this one is not deployed before acting on it.")
+
+
 @dataclass
 class Report:
     findings: List[Finding] = field(default_factory=list)
     sql_files: int = 0
     code_files: int = 0
     tables: List[str] = field(default_factory=list)
+    include_tests: bool = False
 
     def add(self, finding: Finding) -> None:
+        if not self.include_tests and is_test_path(finding.path) and finding.severity != REVIEW:
+            finding.severity = REVIEW
+            finding.confidence = HEURISTIC
+            finding.detail = finding.detail + TEST_NOTE
         self.findings.append(finding)
 
     def sorted_findings(self) -> List[Finding]:
@@ -628,8 +653,8 @@ def scan_access_control(rel: str, text: str, is_client: bool, report: Report) ->
 # Driver
 # --------------------------------------------------------------------------
 
-def audit(root: str) -> Report:
-    report = Report()
+def audit(root: str, include_tests: bool = False) -> Report:
+    report = Report(include_tests=include_tests)
     sql_paths: List[str] = []
 
     for path in walk(root):
@@ -711,6 +736,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--json", action="store_true", help="emit findings as JSON")
     parser.add_argument("--strict", action="store_true",
                         help="exit 1 when a critical or high finding is present")
+    parser.add_argument("--include-tests", action="store_true", dest="include_tests",
+                        help="report findings in test, fixture and demo paths at full severity")
     args = parser.parse_args(argv)
 
     root = args.path
@@ -723,7 +750,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(message)
         return 0
 
-    report = audit(root)
+    report = audit(root, include_tests=args.include_tests)
 
     if args.json:
         print(json.dumps({

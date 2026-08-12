@@ -352,6 +352,28 @@ class TestGitHygiene(ProjectCase):
         self.project.git("commit", "-m", "template")
         self.assertEqual([c for c in self.project.codes() if c.startswith("SEC04")], [])
 
+    def test_env_local_example_is_not_a_git_finding(self):
+        """Templates are meant to be committed, whatever they are called.
+
+        Matching three exact names missed `.env.local.example` - the shape the
+        Next.js reference implementation uses - and graded that repo BLOCKED on
+        this one finding. Found by running ship-check over it.
+        """
+        self.project.init_repo()
+        self.project.write(".env.local.example", "NEXT_PUBLIC_SUPABASE_URL=\n")
+        self.project.git("add", ".env.local.example")
+        self.project.git("commit", "-m", "template")
+        self.assertEqual([c for c in self.project.codes() if c.startswith("SEC04")], [])
+
+    def test_a_real_env_file_is_still_reported_next_to_a_template(self):
+        """The fix must not become a way to smuggle a real env file past it."""
+        self.project.init_repo()
+        self.project.write(".env.local.example", "API_KEY=\n")
+        self.project.write(".env.local", "API_KEY=live_value\n")
+        self.project.git("add", ".env.local.example", ".env.local")
+        self.project.git("commit", "-m", "oops")
+        self.assertIn("SEC040", self.project.codes())
+
     def test_no_git_repo_means_no_git_findings(self):
         self.project.write(".env", "SOME_VALUE=1\n")
         self.assertEqual([c for c in self.project.codes() if c.startswith("SEC04")], [])

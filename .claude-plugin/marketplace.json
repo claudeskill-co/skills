@@ -102,6 +102,29 @@
       ]
     },
     {
+      "name": "ship-check",
+      "source": "./plugins/ship-check",
+      "displayName": "Ship Check",
+      "description": "Run the whole Ship-Safe suite and grade whether a project is safe to launch: access control, secrets, payments and deploy readiness in one merged report with one verdict, and an explicit statement of what was and was not checked. Local files only - no network.",
+      "version": "1.0.0",
+      "author": {
+        "name": "ClaudeSkill",
+        "url": "https://claudeskill.co"
+      },
+      "homepage": "https://claudeskill.co/skills/ship-check",
+      "license": "MIT",
+      "category": "security",
+      "tags": [
+        "security",
+        "audit",
+        "pre-launch",
+        "deploy",
+        "checklist",
+        "supabase",
+        "stripe"
+      ]
+    },
+    {
       "name": "stripe-check",
       "source": "./plugins/stripe-check",
       "displayName": "Stripe Check",
