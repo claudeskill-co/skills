@@ -262,11 +262,27 @@ PLACEHOLDER_RE = re.compile(
 # paths are downgraded to `review` rather than reported as leaks - visible, but
 # never able to fail a build. `--include-tests` turns the downgrade off.
 TEST_PATH_RE = re.compile(
-    r"(?:^|/)(?:tests?|__tests__|__mocks__|spec|specs|fixtures?|testdata|e2e|cypress|"
-    r"\.storybook|stories)(?:/|$)"
-    r"|\.(?:test|spec|stories|fixture)\.[cm]?[jt]sx?$"
-    r"|(?:^|/)test_[^/]+\.py$|_test\.py$|(?:^|/)conftest\.py$"
+    # Canonical across every Ship-Safe scanner - keep in sync. A conformance
+    # test in plugins/ship-check/tests asserts all four classify the same
+    # paths identically; four independent copies of this had already drifted
+    # into four different answers, and ship-check merged the disagreement into
+    # a self-contradicting verdict.
+    #
+    # `demo` and `examples` are deliberately absent. A directory called demo/
+    # in someone else's repository is far more likely to be real code than a
+    # throwaway fixture, and downgrading it silently is how a scanner returns
+    # CLEAR on a live key.
+    r"(^|/)(tests?|__tests__|__mocks__|mocks?|spec|specs|fixtures?|testdata"
+    r"|e2e|cypress|\.storybook|stories)(/|$)"
+    r"|\.(test|spec|stories|fixture)\.[cm]?[jt]sx?$"
+    r"|(^|/)test_[^/]+\.py$|_test\.py$|(^|/)conftest\.py$",
+    re.I,
 )
+
+
+def is_test_path(rel: str) -> bool:
+    """Shared name across every scanner - the conformance test calls this."""
+    return bool(TEST_PATH_RE.search(rel.replace(os.sep, "/")))
 
 ENV_NAME_RE = re.compile(r"^\.env(?:\..*)?$")
 
@@ -650,7 +666,7 @@ def sweep(root: str, include_tests: bool = False) -> Report:
         in_env = bool(ENV_NAME_RE.match(name))
         is_example = name in (".env.example", ".env.sample", ".env.template")
         is_client = bool(USE_CLIENT_RE.search(text[:400]))
-        in_test = (not include_tests) and bool(TEST_PATH_RE.search(rel.replace(os.sep, "/")))
+        in_test = (not include_tests) and is_test_path(rel)
 
         # A key inside an ignored, never-committed env file is in the right
         # place. The exposure question is answered by the git checks, not by

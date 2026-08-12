@@ -45,6 +45,108 @@ def result(plugin="rls-audit", covers="access control", ran=True, findings=None,
 ALL_RAN = [result(s.plugin, s.covers, True) for s in sc.SCANNERS]
 
 
+class TestScannerConformance(unittest.TestCase):
+    """The scanners must agree with each other, and nothing else checks that.
+
+    The CI matrix runs each plugin in isolation, so it is structurally
+    incapable of catching a disagreement between them. Four independently
+    maintained copies of the path classifier had drifted into four different
+    answers, and ship-check merged that disagreement into a self-contradicting
+    verdict: one file, one line, one key, reported `critical` by secret-sweep
+    and `review` by stripe-check.
+
+    This is the tripwire that makes the copies safe to keep.
+    """
+
+    CORPUS = [
+        # path, is it a test/fixture path
+        ("src/index.ts", False),
+        ("app/api/route.ts", False),
+        ("lib/billing.ts", False),
+        # These two are the reason the bug existed. A directory called demo/ in
+        # someone else's repository is far more likely to be real code than a
+        # throwaway sample, so it is deliberately NOT downgraded.
+        ("demo/only.ts", False),
+        ("examples/basic/app.ts", False),
+        ("samples/app.ts", False),
+        ("tests/unit.ts", True),
+        ("test/unit.ts", True),
+        ("__tests__/a.ts", True),
+        ("__mocks__/db.ts", True),
+        ("mocks/db.ts", True),
+        ("spec/a.ts", True),
+        ("fixtures/schema.sql", True),
+        ("demo/fixture/broken.ts", True),
+        ("testdata/sample.json", True),
+        ("e2e/login.ts", True),
+        ("cypress/e2e/a.cy.ts", True),
+        ("stories/Button.tsx", True),
+        ("a.test.ts", True),
+        ("a.spec.tsx", True),
+        ("tests/test_thing.py", True),
+        ("thing_test.py", True),
+        ("conftest.py", True),
+    ]
+
+    _cache = {}
+
+    @classmethod
+    def load(cls, plugin, module):
+        if module in cls._cache:
+            return cls._cache[module]
+        import importlib.util
+        path = PLUGINS / plugin / "skills" / plugin / "scripts" / (module + ".py")
+        spec = importlib.util.spec_from_file_location("conf_" + module, path)
+        loaded = importlib.util.module_from_spec(spec)
+        # Register before executing: @dataclass resolves annotations through
+        # sys.modules, and fails on a module that is not there yet.
+        sys.modules[spec.name] = loaded
+        spec.loader.exec_module(loaded)
+        cls._cache[module] = loaded
+        return loaded
+
+    SCANNER_MODULES = [
+        ("rls-audit", "rls_audit"),
+        ("secret-sweep", "secret_sweep"),
+        ("stripe-check", "stripe_check"),
+        ("deploy-check", "deploy_check"),
+    ]
+
+    def test_every_scanner_classifies_paths_identically(self):
+        modules = [(name, self.load(name, mod)) for name, mod in self.SCANNER_MODULES]
+        for path, expected in self.CORPUS:
+            answers = {name: bool(mod.is_test_path(path)) for name, mod in modules}
+            self.assertEqual(
+                set(answers.values()), {expected},
+                "scanners disagree on %r: %s (expected %s from all)" % (path, answers, expected))
+
+    def test_the_umbrella_agrees_with_the_scanners(self):
+        for path, expected in self.CORPUS:
+            self.assertEqual(bool(sc.is_test_path(path)), expected, path)
+
+    def test_the_regex_source_is_byte_identical_everywhere(self):
+        """Behavioural equality is the requirement; identical source is how it
+        stays true for inputs this corpus does not happen to cover."""
+        patterns = {name: self.load(name, mod).TEST_PATH_RE.pattern
+                    for name, mod in self.SCANNER_MODULES}
+        patterns["ship-check"] = sc.TEST_PATH_RE.pattern
+        self.assertEqual(len(set(patterns.values())), 1,
+                         "TEST_PATH_RE has drifted apart again: %s"
+                         % {k: v[:40] for k, v in patterns.items()})
+
+    def test_every_scanner_emits_the_same_finding_shape(self):
+        """ship-check merges these dicts, so the keys are a contract."""
+        required = {"code", "severity", "confidence", "title", "file", "line", "detail", "fix"}
+        for name, mod in [(n, self.load(n, m)) for n, m in self.SCANNER_MODULES]:
+            fields = set(mod.Finding.__dataclass_fields__)
+            self.assertTrue({"code", "severity", "confidence", "title", "line"} <= fields,
+                            "%s Finding is missing contract fields: %s" % (name, fields))
+            self.assertTrue(required <= set(mod.Finding(
+                code="X", severity="review", confidence="fact", title="t",
+                path="p", line=1, detail="d", fix="f").as_dict()),
+                "%s as_dict() does not emit the merge contract" % name)
+
+
 class TestGrading(unittest.TestCase):
 
     def test_proven_critical_blocks(self):
@@ -103,7 +205,8 @@ class TestGrading(unittest.TestCase):
 
 class TestMerging(unittest.TestCase):
 
-    def test_same_place_from_two_scanners_becomes_one_finding(self):
+    def test_same_credential_from_two_scanners_becomes_one_finding(self):
+        """The one legitimate overlap: a key is both a secret and a payments defect."""
         merged = sc.merge([
             result("secret-sweep", "secrets", True,
                    [finding(code="SEC010", severity=sc.CRITICAL, source="secret-sweep")]),
@@ -112,7 +215,33 @@ class TestMerging(unittest.TestCase):
         ])
         self.assertEqual(len(merged), 1)
         self.assertEqual(merged[0].code, "SEC010")
-        self.assertEqual(merged[0].also, ["stripe-check (PAY005)"])
+        self.assertEqual(len(merged[0].also), 1)
+        self.assertIn("stripe-check (PAY005)", merged[0].also[0])
+
+    def test_two_different_defects_at_one_line_are_never_collapsed(self):
+        """The defect this fixes: the loser's fix text used to be destroyed,
+        leaving a bare code the user could do nothing with."""
+        merged = sc.merge([result("deploy-check", "deploy", True, [
+            finding(code="DEP005", severity=sc.MEDIUM, source="deploy-check",
+                    title="No security headers"),
+            finding(code="DEP004", severity=sc.MEDIUM, source="deploy-check",
+                    title="Type errors ignored at build time"),
+        ])])
+        self.assertEqual(len(merged), 2)
+        self.assertEqual({f.code for f in merged}, {"DEP004", "DEP005"})
+
+    def test_a_merged_sibling_keeps_its_own_words(self):
+        merged = sc.merge([
+            result("secret-sweep", "secrets", True,
+                   [finding(code="SEC010", severity=sc.CRITICAL, source="secret-sweep")]),
+            result("stripe-check", "payments", True,
+                   [sc.Finding(code="PAY005", severity=sc.HIGH, confidence=sc.FACT,
+                               title="Live Stripe secret key in a file", path="a.ts", line=1,
+                               detail="d", fix="Roll the key in the Stripe dashboard",
+                               source="stripe-check")]),
+        ])
+        self.assertIn("Live Stripe secret key in a file", merged[0].also[0])
+        self.assertIn("Roll the key", merged[0].also[0])
 
     def test_the_more_severe_version_survives(self):
         merged = sc.merge([
@@ -124,7 +253,7 @@ class TestMerging(unittest.TestCase):
         self.assertEqual(len(merged), 1)
         self.assertEqual(merged[0].severity, sc.CRITICAL)
         self.assertEqual(merged[0].code, "SEC010")
-        self.assertEqual(merged[0].also, ["stripe-check (PAY005)"])
+        self.assertIn("stripe-check (PAY005)", merged[0].also[0])
 
     def test_different_lines_stay_separate(self):
         merged = sc.merge([
@@ -144,14 +273,30 @@ class TestMerging(unittest.TestCase):
         ])])
         self.assertEqual([f.severity for f in merged], [sc.CRITICAL, sc.MEDIUM, sc.REVIEW])
 
-    def test_three_way_overlap_lists_both_others(self):
+    def test_three_scanners_on_one_credential_collapse_together(self):
         merged = sc.merge([
-            result("rls-audit", "a", True, [finding(code="RLS001", severity=sc.CRITICAL, source="rls-audit")]),
+            result("rls-audit", "a", True, [finding(code="KEY001", severity=sc.CRITICAL, source="rls-audit")]),
             result("secret-sweep", "b", True, [finding(code="SEC010", severity=sc.HIGH, source="secret-sweep")]),
             result("stripe-check", "c", True, [finding(code="PAY005", severity=sc.HIGH, source="stripe-check")]),
         ])
         self.assertEqual(len(merged), 1)
-        self.assertEqual(sorted(merged[0].also), ["secret-sweep (SEC010)", "stripe-check (PAY005)"])
+        self.assertEqual(len(merged[0].also), 2)
+
+    def test_an_rls_finding_never_merges_into_a_credential_one(self):
+        """Different problems, same line - RLS001 is not a credential."""
+        merged = sc.merge([
+            result("rls-audit", "a", True, [finding(code="RLS001", severity=sc.CRITICAL, source="rls-audit")]),
+            result("secret-sweep", "b", True, [finding(code="SEC010", severity=sc.HIGH, source="secret-sweep")]),
+        ])
+        self.assertEqual(len(merged), 2)
+
+    def test_the_credential_family_is_explicit(self):
+        self.assertEqual(sc.family("SEC001"), "credential")
+        self.assertEqual(sc.family("KEY001"), "credential")
+        self.assertEqual(sc.family("PAY005"), "credential")
+        self.assertEqual(sc.family("PAY001"), "PAY001")
+        self.assertEqual(sc.family("RLS001"), "RLS001")
+        self.assertEqual(sc.family("DEP004"), "DEP004")
 
 
 class TestLocatingScanners(unittest.TestCase):
@@ -279,11 +424,33 @@ class TestEndToEnd(unittest.TestCase):
         self.assertIn("MISSING", out)
         self.assertIn("not installed", out)
 
-    def test_strict_fails_when_coverage_is_incomplete(self):
+    def test_require_full_coverage_fails_when_a_scanner_is_missing(self):
         """Nothing found is not a pass when nothing ran."""
         with tempfile.TemporaryDirectory() as empty:
-            code, _ = self.run_cli("--scanners", empty, "--strict")
+            code, _ = self.run_cli("--scanners", empty, "--require-full-coverage")
         self.assertEqual(code, 1)
+
+    def test_strict_alone_does_not_fail_on_missing_coverage(self):
+        """Two different failures, two different flags. Conflating them made
+        the primary CI use case fail closed for a coverage reason rather than
+        a security one, every time a scanner was not installed."""
+        with tempfile.TemporaryDirectory() as empty:
+            code, _ = self.run_cli("--scanners", empty, "--strict")
+        self.assertEqual(code, 0)
+
+    def test_strict_still_fails_on_a_real_finding(self):
+        self.write("supabase/migrations/001.sql",
+                   "create table public.profiles (id uuid primary key);\n")
+        code, _ = self.run_cli("--strict")
+        self.assertEqual(code, 1)
+
+    def test_downgraded_findings_are_disclosed_in_coverage(self):
+        """A CLEAR verdict must never be silent about what it demoted."""
+        self.write("fixtures/schema.sql",
+                   "create table public.profiles (id uuid primary key);\n")
+        _, out = self.run_cli()
+        self.assertIn("downgraded as test or fixture paths", out)
+        self.assertIn("--include-tests", out)
 
     def test_review_findings_are_hidden_until_asked_for(self):
         self.write("supabase/migrations/001.sql",

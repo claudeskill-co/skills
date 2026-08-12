@@ -27,8 +27,10 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
+import time
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
@@ -48,6 +50,37 @@ CLEAR = "CLEAR"
 PARTIAL = "INCOMPLETE"
 
 SCAN_TIMEOUT = 180
+# Four scanners at 180s each could hang a pre-commit hook for twelve minutes.
+# The budget is shared, so the whole run is bounded no matter how many run.
+TOTAL_BUDGET = 300
+
+# Kept identical to the scanners' own copy - see the conformance test below.
+TEST_PATH_RE = re.compile(
+    r"(^|/)(tests?|__tests__|__mocks__|mocks?|spec|specs|fixtures?|testdata"
+    r"|e2e|cypress|\.storybook|stories)(/|$)"
+    r"|\.(test|spec|stories|fixture)\.[cm]?[jt]sx?$"
+    r"|(^|/)test_[^/]+\.py$|_test\.py$|(^|/)conftest\.py$",
+    re.I,
+)
+
+
+def is_test_path(rel: str) -> bool:
+    return bool(TEST_PATH_RE.search(rel.replace(os.sep, "/")))
+
+
+# Codes that mean "a credential is in the wrong place". These are the only
+# findings two scanners legitimately report about the same line, so they are
+# the only ones allowed to merge across tools. Everything else keeps its own
+# identity - collapsing two different defects at one line destroyed the second
+# one's fix text, which is the whole reason a user reads the report.
+CREDENTIAL_CODES = {"PAY005", "PAY006", "PAY007"}
+CREDENTIAL_PREFIXES = ("SEC", "KEY")
+
+
+def family(code: str) -> str:
+    if code in CREDENTIAL_CODES or code.startswith(CREDENTIAL_PREFIXES):
+        return "credential"
+    return code
 
 
 @dataclass
@@ -163,15 +196,24 @@ def hook_installed(roots: List[str]) -> bool:
 # Running them
 # --------------------------------------------------------------------------
 
-def run_scanner(scanner: Scanner, script: str, root: str) -> ScanResult:
+def run_scanner(scanner: Scanner, script: str, root: str,
+                deadline: Optional[float] = None) -> ScanResult:
     result = ScanResult(plugin=scanner.plugin, covers=scanner.covers, ran=False)
+
+    budget = SCAN_TIMEOUT
+    if deadline is not None:
+        budget = min(SCAN_TIMEOUT, max(0.0, deadline - time.monotonic()))
+        if budget <= 0:
+            result.error = "skipped: the %ds budget for the whole run was already spent" % TOTAL_BUDGET
+            return result
+
     try:
         completed = subprocess.run(
             [sys.executable, script, "--path", root, "--json"],
-            capture_output=True, text=True, timeout=SCAN_TIMEOUT,
+            capture_output=True, text=True, timeout=budget,
         )
     except subprocess.TimeoutExpired:
-        result.error = "timed out after %ds" % SCAN_TIMEOUT
+        result.error = "timed out after %ds" % int(budget)
         return result
     except OSError as error:
         result.error = "could not start: %s" % error
@@ -218,12 +260,12 @@ def merge(results: List[ScanResult]) -> List[Finding]:
     a payments defect - and the same line reported twice reads as two problems.
     The most severe version wins and names the others.
     """
-    by_place: Dict[Tuple[str, int], Finding] = {}
-    order: List[Tuple[str, int]] = []
+    by_place: Dict[Tuple[str, int, str], Finding] = {}
+    order: List[Tuple[str, int, str]] = []
 
     for result in results:
         for finding in result.findings:
-            key = (finding.path, finding.line)
+            key = (finding.path, finding.line, family(finding.code))
             existing = by_place.get(key)
             if existing is None:
                 by_place[key] = finding
@@ -233,7 +275,10 @@ def merge(results: List[ScanResult]) -> List[Finding]:
             if SEVERITY_ORDER.get(finding.severity, 9) < SEVERITY_ORDER.get(existing.severity, 9):
                 keep, drop = finding, existing
                 by_place[key] = finding
-            label = "%s (%s)" % (drop.source, drop.code)
+            # Carry the loser's own words, not just its code. A bare
+            # "also reported by: deploy-check (DEP004)" tells the user nothing
+            # about what to actually do.
+            label = "%s (%s): %s - %s" % (drop.source, drop.code, drop.title, drop.fix)
             if label not in keep.also:
                 keep.also.append(label)
 
@@ -331,6 +376,17 @@ def render(findings: List[Finding], results: List[ScanResult], verdict: str,
                  % ("found" if hook else "MISSING", HOOK_PLUGIN, "destructive commands",
                     "a hook, so nothing to scan - confirm it is enabled"
                     if hook else "not installed - nothing is stopping a destructive command"))
+
+    # A CLEAR verdict must never be silent about what it demoted. Everything
+    # under a test or fixture path is downgraded by the scanners, so a project
+    # whose real code lives in such a directory could otherwise be waved
+    # through with live credentials in it.
+    demoted = [f for f in findings if f.severity == REVIEW and is_test_path(f.path)]
+    if demoted:
+        places = sorted({os.path.dirname(f.path) or "." for f in demoted})
+        lines.append("  note     %d finding(s) downgraded as test or fixture paths: %s"
+                     % (len(demoted), ", ".join(places[:4])))
+        lines.append("           if that is your real code, re-run the scanner with --include-tests")
     lines.append("")
 
     if not findings:
@@ -378,8 +434,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--json", action="store_true", help="emit the merged report as JSON")
     parser.add_argument("--all", action="store_true", dest="show_all",
                         help="include review-level findings in the text report")
+    # Two different failures, two different flags. Conflating them meant the
+    # primary CI use case failed closed for a coverage reason rather than a
+    # security one, every time a scanner was not installed.
     parser.add_argument("--strict", action="store_true",
-                        help="exit 1 unless the verdict is CLEAR")
+                        help="exit 1 when the verdict is BLOCKED or RISKY")
+    parser.add_argument("--require-full-coverage", action="store_true",
+                        dest="require_coverage",
+                        help="exit 1 when any scanner did not run")
     args = parser.parse_args(argv)
 
     root = args.path
@@ -393,6 +455,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 0
 
     roots = candidate_roots(args.scanners)
+    deadline = time.monotonic() + TOTAL_BUDGET
     results: List[ScanResult] = []
     for scanner in SCANNERS:
         script = locate(scanner, roots)
@@ -400,7 +463,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             results.append(ScanResult(plugin=scanner.plugin, covers=scanner.covers, ran=False,
                                       error="not installed"))
             continue
-        results.append(run_scanner(scanner, script, root))
+        results.append(run_scanner(scanner, script, root, deadline))
 
     hook = hook_installed(roots)
     findings = merge(results)
@@ -424,7 +487,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     else:
         print(render(findings, results, verdict, reason, root, hook, args.show_all))
 
-    if args.strict and verdict != CLEAR:
+    if args.strict and verdict in (BLOCKED, RISKY):
+        return 1
+    if args.require_coverage and any(not r.ran for r in results):
         return 1
     return 0
 

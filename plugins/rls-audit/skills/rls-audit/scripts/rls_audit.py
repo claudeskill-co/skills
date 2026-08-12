@@ -79,8 +79,20 @@ class Finding:
 # shipping a test suite. Downgraded, never silenced: a real key or a real
 # table does leak from a fixture directory too.
 TEST_PATH_RE = re.compile(
-    r"(^|/)(tests?|__tests__|spec|specs|fixtures?|e2e|mocks?|examples?|demo|samples?)(/|$)"
-    r"|\.(test|spec)\.[a-z]+$",
+    # Canonical across every Ship-Safe scanner - keep in sync. A conformance
+    # test in plugins/ship-check/tests asserts all four classify the same
+    # paths identically; four independent copies of this had already drifted
+    # into four different answers, and ship-check merged the disagreement into
+    # a self-contradicting verdict.
+    #
+    # `demo` and `examples` are deliberately absent. A directory called demo/
+    # in someone else's repository is far more likely to be real code than a
+    # throwaway fixture, and downgrading it silently is how a scanner returns
+    # CLEAR on a live key.
+    r"(^|/)(tests?|__tests__|__mocks__|mocks?|spec|specs|fixtures?|testdata"
+    r"|e2e|cypress|\.storybook|stories)(/|$)"
+    r"|\.(test|spec|stories|fixture)\.[cm]?[jt]sx?$"
+    r"|(^|/)test_[^/]+\.py$|_test\.py$|(^|/)conftest\.py$",
     re.I,
 )
 
