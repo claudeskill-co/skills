@@ -28,7 +28,15 @@ Two other modes:
 ```bash
 python3 scripts/rls_audit.py --path . --json     # for piping or storing
 python3 scripts/rls_audit.py --path . --strict   # exit 1 on critical/high, for CI
+python3 scripts/rls_audit.py --path . --include-tests   # do not demote fixture paths
 ```
+
+Findings under `tests/`, `fixtures/`, `__mocks__/`, `testdata/`, `cypress/` and
+`stories/` are downgraded to `review`, because a deliberately broken sample
+schema is not a production defect. If that is where the real schema lives, pass
+`--include-tests` — and say so, because the first report will have understated
+it. `demo/` and `examples/` are **not** demoted: a directory called `demo` in a
+real project is more often shipped code than a throwaway.
 
 `--strict` deliberately ignores `review` findings. A heuristic must never break
 someone's build.

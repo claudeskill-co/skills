@@ -25,7 +25,8 @@ touches the network.
 ```bash
 python3 scripts/ship_check.py --path . --all       # include review-level findings
 python3 scripts/ship_check.py --path . --json      # for piping or storing
-python3 scripts/ship_check.py --path . --strict    # exit 1 unless the verdict is CLEAR
+python3 scripts/ship_check.py --path . --strict    # exit 1 when BLOCKED or RISKY
+python3 scripts/ship_check.py --path . --require-full-coverage   # exit 1 if a scanner is missing
 python3 scripts/ship_check.py --path . --scanners ~/plugins   # if siblings are elsewhere
 ```
 
@@ -43,7 +44,9 @@ user rather than paraphrasing them away:
 
 - **A scanner that is not installed did not pass — it did not run.** Missing
   coverage can never be graded `CLEAR`, and the report names exactly what went
-  unchecked.
+  unchecked. `--strict` fails on *findings*; `--require-full-coverage` fails on
+  *missing scanners*. They are separate flags because they are separate
+  failures — a CI job should not go red for a security reason it did not find.
 - **A heuristic never blocks.** Only `fact`-confidence findings can produce
   `BLOCKED`. Pattern matches raise the verdict to `RISKY` and say so. Being
   loudly wrong is how a pre-flight check stops being run at all.
@@ -87,10 +90,17 @@ Then apply the individual skill's guidance for whichever codes came up; each
 scanner's SKILL.md has the fix patterns and the ordering advice for its own
 rules. Do not invent fixes here that contradict them.
 
-Findings under `tests/`, `fixtures/` and `demo/` are downgraded to `review` by
-the scanners themselves, because a deliberately broken sample is not a
-production defect. If the user's real schema lives in a directory named like a
-fixture, tell them — the tool will have understated it.
+Findings under `tests/`, `fixtures/`, `__mocks__/`, `testdata/`, `cypress/` and
+`stories/` are downgraded to `review` by the scanners themselves, because a
+deliberately broken sample is not a production defect. The coverage block says
+how many were demoted and where — **read that line out to the user**, because a
+`CLEAR` verdict that quietly demoted eight findings is the most misleading
+output this tool can produce. If that is their real code, re-run the individual
+scanner with `--include-tests`.
+
+`demo/` and `examples/` are deliberately **not** downgraded. A directory called
+`demo` in a real project is far more likely to be shipped code than a throwaway
+fixture.
 
 ## Say what this cannot see
 
