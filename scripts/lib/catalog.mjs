@@ -98,6 +98,9 @@ export function toRegistryEntry({ slug, plugin, catalog, skills }) {
     slug,
     displayName: catalog.displayName ?? slug,
     summary: catalog.summary ?? plugin.description ?? "",
+    // One concrete line about what the skill actually contains. Lives beside
+    // the code so the catalogue cannot advertise a count the code lost.
+    signature: catalog.signature ?? null,
     description: plugin.description ?? "",
     category: catalog.category ?? "general",
     audience: catalog.audience ?? ["operator"],

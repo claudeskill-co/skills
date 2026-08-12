@@ -1,9 +1,14 @@
 {
   "displayName": "DB Guard",
   "summary": "Stops an agent dropping a database it should never have been pointed at.",
+  "signature": "18 destructive command shapes, stopped before they run",
   "category": "security",
-  "audience": ["developer"],
-  "surfaces": ["cli"],
+  "audience": [
+    "developer"
+  ],
+  "surfaces": [
+    "cli"
+  ],
   "tier": "free",
   "featured": true,
   "highlights": [

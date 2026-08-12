@@ -1,9 +1,16 @@
 {
   "displayName": "Unit Economics",
   "summary": "What an order actually earns once GST, shipping, payment fees and COD returns are taken out.",
+  "signature": "CM1 to CM3, max CAC, breakeven ROAS, discount floor",
   "category": "finance",
-  "audience": ["operator"],
-  "surfaces": ["cli", "desktop", "web"],
+  "audience": [
+    "operator"
+  ],
+  "surfaces": [
+    "cli",
+    "desktop",
+    "web"
+  ],
   "tier": "free",
   "featured": true,
   "highlights": [
