@@ -1,0 +1,22 @@
+{
+  "displayName": "Deploy Check",
+  "summary": "Close the gap between what runs on your laptop and what runs in production.",
+  "signature": "12 rule codes, file and line on every finding",
+  "category": "security",
+  "audience": [
+    "developer"
+  ],
+  "surfaces": [
+    "cli"
+  ],
+  "tier": "free",
+  "featured": true,
+  "highlights": [
+    "Variables your code reads that no env template documents - the boot failure that only happens after deploy",
+    "Development and production pointed at the same remote database, named and compared without printing the credentials",
+    "Type errors and lint waved through at build time, and source maps published to production",
+    "Missing security headers, wildcard CORS, no rate limiter and no health endpoint - each reported once, not once per file"
+  ],
+  "requires": "python3 (already on macOS and Linux). Reads your project files only. No network, and it never reads a value out of your environment.",
+  "notes": "It cannot see your hosting dashboard, which is where the real configuration lives - a project can pass every check here and still be missing every variable in production. It also cannot tell you whether your database has backups."
+}

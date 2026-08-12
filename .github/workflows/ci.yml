@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        plugin: [db-guard, rls-audit, secret-sweep, stripe-check, token-screener, unit-economics]
+        plugin: [db-guard, deploy-check, rls-audit, secret-sweep, stripe-check, token-screener, unit-economics]
         python-version: ["3.9", "3.11", "3.13"]
     steps:
       - uses: actions/checkout@v4
@@ -61,6 +61,9 @@ jobs:
       - name: secret-sweep handles a directory that is not there
         working-directory: plugins/secret-sweep
         run: python skills/secret-sweep/scripts/secret_sweep.py --path /nonexistent --strict
+      - name: deploy-check handles a directory that is not there
+        working-directory: plugins/deploy-check
+        run: python skills/deploy-check/scripts/deploy_check.py --path /nonexistent --strict
       - name: stripe-check handles a directory that is not there
         working-directory: plugins/stripe-check
         run: python skills/stripe-check/scripts/stripe_check.py --path /nonexistent --strict

@@ -33,6 +33,29 @@
       ]
     },
     {
+      "name": "deploy-check",
+      "source": "./plugins/deploy-check",
+      "displayName": "Deploy Check",
+      "description": "Find the gap between what runs locally and what will run in production: environment variables that exist only on your machine, development pointed at the live database, type errors waved through at build time, missing security headers, no rate limiting and no health endpoint. Local files only - no network.",
+      "version": "1.0.0",
+      "author": {
+        "name": "ClaudeSkill",
+        "url": "https://claudeskill.co"
+      },
+      "homepage": "https://claudeskill.co/skills/deploy-check",
+      "license": "MIT",
+      "category": "security",
+      "tags": [
+        "deploy",
+        "production",
+        "environment",
+        "vercel",
+        "headers",
+        "pre-launch",
+        "audit"
+      ]
+    },
+    {
       "name": "rls-audit",
       "source": "./plugins/rls-audit",
       "displayName": "RLS Audit",
