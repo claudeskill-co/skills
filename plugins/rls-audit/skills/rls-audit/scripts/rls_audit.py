@@ -516,6 +516,20 @@ PUBLIC_SERVICE_ENV_RE = re.compile(
     r"(?:SERVICE_ROLE|SERVICE_KEY|SECRET)[A-Z0-9_]*"
 )
 SERVICE_ENV_RE = re.compile(r"\bSUPABASE_SERVICE_ROLE(?:_KEY)?\b|\bSERVICE_ROLE_KEY\b")
+
+# Naming the variable is not using it. A health endpoint that reports
+# `Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)` never builds a privileged
+# client - and reporting a boolean is exactly what deploy-check tells people
+# to do instead of logging the value, so flagging it made our own two tools
+# contradict each other. Found by running the suite over our own site.
+#
+# API001 is about a route that can reach the whole database, so it now
+# requires evidence of that: a client built with the key, or the key sent as
+# a credential.
+PRIVILEGED_USE_RE = re.compile(
+    r"createClient\s*\(|createServerClient\s*\(|new\s+SupabaseClient|"
+    r"apikey\s*:|Authorization\s*:|['\"]service_role['\"]|\.auth\.admin\b",
+    re.I)
 USE_CLIENT_RE = re.compile(r"^\s*['\"]use client['\"]", re.MULTILINE)
 
 
@@ -644,7 +658,8 @@ def scan_access_control(rel: str, text: str, is_client: bool, report: Report) ->
             break  # one per file is enough to prompt a look
 
     is_route = bool(ROUTE_FILE.search(rel.replace(os.sep, "/"))) or bool(PAGES_API_FILE.search(rel.replace(os.sep, "/")))
-    if is_route and SERVICE_ENV_RE.search(text) and not AUTH_CHECK.search(text):
+    if (is_route and SERVICE_ENV_RE.search(text) and not AUTH_CHECK.search(text)
+            and PRIVILEGED_USE_RE.search(text)):
         match = SERVICE_ENV_RE.search(text)
         report.add(Finding(
             code="API001",
