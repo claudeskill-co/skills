@@ -191,6 +191,24 @@ class TestProviderPatterns(ProjectCase):
         self.project.write(".env", "DATABASE_URL=postgresql://localhost:5432/app\n")
         self.assertEqual([c for c in self.project.codes() if c == "SEC015"], [])
 
+    def test_documentation_connection_strings_are_ignored(self):
+        # Security docs are full of DSNs shaped exactly like the real thing,
+        # usually under a "never hardcode credentials" heading. Reporting the
+        # advice as the vulnerability is worse than saying nothing.
+        self.project.write("docs/security.md", "\n".join([
+            "// WRONG: const db = connect('postgres://admin:password@host/db');",
+            "postgres://user:your_password@db.example.com:5432/mydb",
+            "mysql://root:changeme@hostname/app",
+            "postgresql://admin:<password>@host/db",
+        ]))
+        self.assertEqual([c for c in self.project.codes() if c == "SEC015"], [])
+
+    def test_a_real_dsn_is_still_caught(self):
+        self.project.write(
+            "config.py",
+            'DSN = "postgresql://appuser:Xk8sLmQ2pR9vT4wZ@db.abcdef.supabase.co:5432/postgres"\n')
+        self.assertIn("SEC015", self.project.codes())
+
     def test_service_role_jwt(self):
         self.project.write("lib/admin.ts", 'const k = "%s";\n' % service_role_jwt())
         self.assertEqual(self.project.codes(), ["SEC016"])

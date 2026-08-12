@@ -298,6 +298,25 @@ def looks_like_placeholder(value: str) -> bool:
     return False
 
 
+DSN_RE = re.compile(r"^\w+://(?P<user>[^\s:'\"]+):(?P<password>[^\s@'\"]+)@(?P<host>[^\s'\"/:]+)")
+
+# Hosts that only ever appear in an example.
+EXAMPLE_HOST_RE = re.compile(
+    r"^(?:host|hostname|server|dbhost|your[-_.]?\w*|<[^>]*>|example\.com|"
+    r"[\w-]*\.example(?:\.com)?|db\.example\.com)$", re.I
+)
+
+
+def _is_example_dsn(value: str) -> bool:
+    """A connection string from documentation rather than from a deployment."""
+    match = DSN_RE.match(value)
+    if not match:
+        return False
+    if looks_like_placeholder(match.group("password")):
+        return True
+    return bool(EXAMPLE_HOST_RE.match(match.group("host")))
+
+
 def decode_jwt_role(payload: str) -> Optional[str]:
     padded = payload + "=" * (-len(payload) % 4)
     try:
@@ -358,6 +377,13 @@ def scan_patterns(rel: str, text: str, report: Report, in_env: bool, in_test: bo
 
             if pattern.code == "SEC004" and "sk-ant-" in value:
                 continue  # Anthropic keys also match the OpenAI shape; SEC005 owns them.
+
+            if pattern.code == "SEC015" and _is_example_dsn(value):
+                # Security documentation is full of connection strings shaped
+                # exactly like the real thing - `postgres://admin:password@host/db`
+                # under a "NEVER hardcode credentials" heading. Reporting the
+                # advice as the vulnerability is worse than saying nothing.
+                continue
 
             severity = CRITICAL if pattern.live else MEDIUM
             report.add_maybe_test(Finding(
