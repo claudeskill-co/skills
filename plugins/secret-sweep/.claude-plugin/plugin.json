@@ -1,0 +1,21 @@
+{
+  "name": "secret-sweep",
+  "version": "1.0.0",
+  "description": "Find credentials your project is leaking: API keys written into source, secrets in browser-exposed variables, env files tracked by git or sitting in its history, and keys baked into Dockerfiles or CI workflows. Never prints a secret in full. Local files only - no network.",
+  "author": {
+    "name": "ClaudeSkill",
+    "url": "https://claudeskill.co"
+  },
+  "homepage": "https://claudeskill.co/skills/secret-sweep",
+  "repository": "https://github.com/claudeskill-co/skills",
+  "license": "MIT",
+  "keywords": [
+    "security",
+    "secrets",
+    "api-keys",
+    "git",
+    "leak",
+    "audit",
+    "pre-launch"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "rls-audit",
+  "version": "1.0.0",
+  "description": "Audit a Supabase or Postgres app for access-control holes before it ships: tables with row level security off, policies that let everyone through, service role keys reachable from the browser, and paywalls enforced only in client code. Local files only - no network.",
+  "author": {
+    "name": "ClaudeSkill",
+    "url": "https://claudeskill.co"
+  },
+  "homepage": "https://claudeskill.co/skills/rls-audit",
+  "repository": "https://github.com/claudeskill-co/skills",
+  "license": "MIT",
+  "keywords": [
+    "security",
+    "supabase",
+    "rls",
+    "postgres",
+    "auth",
+    "audit",
+    "pre-launch"
+  ]
+}

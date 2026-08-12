@@ -1,0 +1,17 @@
+{
+  "displayName": "Secret Sweep",
+  "summary": "Find the credentials you are leaking, and the ones git remembers even after you deleted them.",
+  "category": "security",
+  "audience": ["developer"],
+  "surfaces": ["cli"],
+  "tier": "free",
+  "featured": true,
+  "highlights": [
+    "Sixteen provider signatures, from Stripe and AWS to Supabase service_role keys",
+    "Reads git history, so an env file you deleted last month is still reported",
+    "Never prints a secret in full - the report does not become another copy of the key",
+    "Stays quiet about keys in a properly ignored .env, because that is where they belong"
+  ],
+  "requires": "python3 (already on macOS and Linux). Reads your project files and runs git log. No network.",
+  "notes": "Finds what is on disk and in git history. It cannot tell you whether a leaked key has already been used - that needs the provider's logs - and it cannot see secrets already set in a deployed environment."
+}

@@ -6,9 +6,78 @@
     "url": "https://claudeskill.co"
   },
   "metadata": {
-    "description": "Installable Claude skills for D2C and ecommerce operators."
+    "description": "Pre-flight checks for apps built fast: find what will break you before you ship."
   },
   "plugins": [
+    {
+      "name": "db-guard",
+      "source": "./plugins/db-guard",
+      "displayName": "DB Guard",
+      "description": "Block destructive database commands before they run: DROP, TRUNCATE, unqualified DELETE or UPDATE, and resets like supabase db reset, whenever they are aimed at anything that is not clearly a local development database. Runs as a PreToolUse hook. Local only - no network.",
+      "version": "1.0.0",
+      "author": {
+        "name": "ClaudeSkill",
+        "url": "https://claudeskill.co"
+      },
+      "homepage": "https://claudeskill.co/skills/db-guard",
+      "license": "MIT",
+      "category": "security",
+      "tags": [
+        "security",
+        "database",
+        "postgres",
+        "supabase",
+        "hooks",
+        "safety",
+        "production"
+      ]
+    },
+    {
+      "name": "rls-audit",
+      "source": "./plugins/rls-audit",
+      "displayName": "RLS Audit",
+      "description": "Audit a Supabase or Postgres app for access-control holes before it ships: tables with row level security off, policies that let everyone through, service role keys reachable from the browser, and paywalls enforced only in client code. Local files only - no network.",
+      "version": "1.0.0",
+      "author": {
+        "name": "ClaudeSkill",
+        "url": "https://claudeskill.co"
+      },
+      "homepage": "https://claudeskill.co/skills/rls-audit",
+      "license": "MIT",
+      "category": "security",
+      "tags": [
+        "security",
+        "supabase",
+        "rls",
+        "postgres",
+        "auth",
+        "audit",
+        "pre-launch"
+      ]
+    },
+    {
+      "name": "secret-sweep",
+      "source": "./plugins/secret-sweep",
+      "displayName": "Secret Sweep",
+      "description": "Find credentials your project is leaking: API keys written into source, secrets in browser-exposed variables, env files tracked by git or sitting in its history, and keys baked into Dockerfiles or CI workflows. Never prints a secret in full. Local files only - no network.",
+      "version": "1.0.0",
+      "author": {
+        "name": "ClaudeSkill",
+        "url": "https://claudeskill.co"
+      },
+      "homepage": "https://claudeskill.co/skills/secret-sweep",
+      "license": "MIT",
+      "category": "security",
+      "tags": [
+        "security",
+        "secrets",
+        "api-keys",
+        "git",
+        "leak",
+        "audit",
+        "pre-launch"
+      ]
+    },
     {
       "name": "token-screener",
       "source": "./plugins/token-screener",

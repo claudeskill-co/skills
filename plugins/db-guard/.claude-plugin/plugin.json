@@ -1,0 +1,21 @@
+{
+  "name": "db-guard",
+  "version": "1.0.0",
+  "description": "Block destructive database commands before they run: DROP, TRUNCATE, unqualified DELETE or UPDATE, and resets like supabase db reset, whenever they are aimed at anything that is not clearly a local development database. Runs as a PreToolUse hook. Local only - no network.",
+  "author": {
+    "name": "ClaudeSkill",
+    "url": "https://claudeskill.co"
+  },
+  "homepage": "https://claudeskill.co/skills/db-guard",
+  "repository": "https://github.com/claudeskill-co/skills",
+  "license": "MIT",
+  "keywords": [
+    "security",
+    "database",
+    "postgres",
+    "supabase",
+    "hooks",
+    "safety",
+    "production"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "displayName": "RLS Audit",
+  "summary": "Find the access-control holes that get shipped apps breached, before you ship.",
+  "category": "security",
+  "audience": ["developer"],
+  "surfaces": ["cli"],
+  "tier": "free",
+  "featured": true,
+  "highlights": [
+    "Every table in the public schema without row level security, named and located",
+    "Policies that are technically on but let everyone through - using (true), with check (true)",
+    "Service role keys sitting anywhere the browser can read them, including client components",
+    "Separates what is proven from what is pattern-matched, and never fails a build on a guess"
+  ],
+  "requires": "python3 (already on macOS and Linux). Reads your project files only. No network.",
+  "notes": "Static analysis of migration files and source. Tables created through the Supabase dashboard rather than a migration are invisible to it, and a clean result is not a guarantee - the report says so itself."
+}

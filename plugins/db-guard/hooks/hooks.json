@@ -1,0 +1,17 @@
+{
+  "description": "db-guard - blocks destructive database commands aimed at anything that is not clearly a local development database",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/skills/db-guard/scripts/db_guard.py\" --hook",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
