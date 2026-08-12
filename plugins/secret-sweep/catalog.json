@@ -1,9 +1,14 @@
 {
   "displayName": "Secret Sweep",
   "summary": "Find the credentials you are leaking, and the ones git remembers even after you deleted them.",
+  "signature": "16 credential types, and it reads git history",
   "category": "security",
-  "audience": ["developer"],
-  "surfaces": ["cli"],
+  "audience": [
+    "developer"
+  ],
+  "surfaces": [
+    "cli"
+  ],
   "tier": "free",
   "featured": true,
   "highlights": [

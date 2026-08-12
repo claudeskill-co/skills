@@ -1,9 +1,14 @@
 {
   "displayName": "RLS Audit",
   "summary": "Find the access-control holes that get shipped apps breached, before you ship.",
+  "signature": "10 rule codes, file and line on every finding",
   "category": "security",
-  "audience": ["developer"],
-  "surfaces": ["cli"],
+  "audience": [
+    "developer"
+  ],
+  "surfaces": [
+    "cli"
+  ],
   "tier": "free",
   "featured": true,
   "highlights": [

@@ -9,6 +9,7 @@
       "slug": "db-guard",
       "displayName": "DB Guard",
       "summary": "Stops an agent dropping a database it should never have been pointed at.",
+      "signature": "18 destructive command shapes, stopped before they run",
       "description": "Block destructive database commands before they run: DROP, TRUNCATE, unqualified DELETE or UPDATE, and resets like supabase db reset, whenever they are aimed at anything that is not clearly a local development database. Runs as a PreToolUse hook. Local only - no network.",
       "category": "security",
       "audience": [
@@ -47,6 +48,7 @@
       "slug": "rls-audit",
       "displayName": "RLS Audit",
       "summary": "Find the access-control holes that get shipped apps breached, before you ship.",
+      "signature": "10 rule codes, file and line on every finding",
       "description": "Audit a Supabase or Postgres app for access-control holes before it ships: tables with row level security off, policies that let everyone through, service role keys reachable from the browser, and paywalls enforced only in client code. Local files only - no network.",
       "category": "security",
       "audience": [
@@ -85,6 +87,7 @@
       "slug": "secret-sweep",
       "displayName": "Secret Sweep",
       "summary": "Find the credentials you are leaking, and the ones git remembers even after you deleted them.",
+      "signature": "16 credential types, and it reads git history",
       "description": "Find credentials your project is leaking: API keys written into source, secrets in browser-exposed variables, env files tracked by git or sitting in its history, and keys baked into Dockerfiles or CI workflows. Never prints a secret in full. Local files only - no network.",
       "category": "security",
       "audience": [
@@ -123,6 +126,7 @@
       "slug": "token-screener",
       "displayName": "Token Screener",
       "summary": "See exactly where your Claude spend goes, and which of it you could have avoided.",
+      "signature": "7 detectors, each naming a saving with its evidence",
       "description": "Screen your Claude Code token usage: where it went, which tasks and tools consumed it, and where it is avoidable. Local transcripts only - no network.",
       "category": "optimization",
       "audience": [
@@ -161,6 +165,7 @@
       "slug": "unit-economics",
       "displayName": "Unit Economics",
       "summary": "What an order actually earns once GST, shipping, payment fees and COD returns are taken out.",
+      "signature": "CM1 to CM3, max CAC, breakeven ROAS, discount floor",
       "description": "Work out what a D2C order actually earns after GST, product cost, packing, shipping, payment fees, COD returns and marketing: CM1/CM2/CM3, max CAC, breakeven ROAS and the discount floor.",
       "category": "finance",
       "audience": [

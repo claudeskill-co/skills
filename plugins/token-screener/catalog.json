@@ -1,9 +1,15 @@
 {
   "displayName": "Token Screener",
   "summary": "See exactly where your Claude spend goes, and which of it you could have avoided.",
+  "signature": "7 detectors, each naming a saving with its evidence",
   "category": "optimization",
-  "audience": ["operator", "developer"],
-  "surfaces": ["cli"],
+  "audience": [
+    "operator",
+    "developer"
+  ],
+  "surfaces": [
+    "cli"
+  ],
   "tier": "free",
   "featured": true,
   "highlights": [
