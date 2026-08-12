@@ -79,6 +79,29 @@
       ]
     },
     {
+      "name": "stripe-check",
+      "source": "./plugins/stripe-check",
+      "displayName": "Stripe Check",
+      "description": "Audit a Stripe integration before it takes real money: webhooks that never verify a signature, charge amounts the customer controls, secret keys reachable from the browser, and fulfilment that depends on the buyer's tab staying open. Local files only - no network, no Stripe API calls.",
+      "version": "1.0.0",
+      "author": {
+        "name": "ClaudeSkill",
+        "url": "https://claudeskill.co"
+      },
+      "homepage": "https://claudeskill.co/skills/stripe-check",
+      "license": "MIT",
+      "category": "security",
+      "tags": [
+        "security",
+        "stripe",
+        "payments",
+        "webhooks",
+        "checkout",
+        "audit",
+        "pre-launch"
+      ]
+    },
+    {
       "name": "token-screener",
       "source": "./plugins/token-screener",
       "displayName": "Token Screener",

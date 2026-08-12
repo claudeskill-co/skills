@@ -1,0 +1,22 @@
+{
+  "displayName": "Stripe Check",
+  "summary": "Find the payment defects that cost money quietly, before real cards hit them.",
+  "signature": "12 rule codes, file and line on every finding",
+  "category": "security",
+  "audience": [
+    "developer"
+  ],
+  "surfaces": [
+    "cli"
+  ],
+  "tier": "free",
+  "featured": true,
+  "highlights": [
+    "Webhook handlers that never verify a signature - a public endpoint anyone can POST a paid event to",
+    "Charge amounts read out of the request body, where the customer picks their own price",
+    "Live secret keys in source, in the example env file, or in a browser-exposed variable",
+    "Grants written with no event id, so one Stripe retry ships the order twice"
+  ],
+  "requires": "python3 (already on macOS and Linux). Reads your project files only. No network, and no Stripe API calls.",
+  "notes": "Static analysis of your source. It cannot tell whether the webhook is registered in the Stripe dashboard at all - the most common silent failure - and it checks Stripe only, not Razorpay, Polar or Paddle."
+}
