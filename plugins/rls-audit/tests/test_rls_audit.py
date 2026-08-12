@@ -131,6 +131,16 @@ class TestNoFalsePositives(ProjectCase):
         self.project.write("lib/admin.ts", "const k = process.env.SUPABASE_SERVICE_ROLE_KEY;\n")
         self.assertEqual(self.project.codes(), [])
 
+    def test_agent_worktrees_are_not_scanned_twice(self):
+        # A worktree is a copy of the same tree, so the same migration would
+        # otherwise be reported once per agent that ever ran.
+        self.project.write("db/1.sql", "create table public.notes (id int);\n")
+        self.project.write(".claude/worktrees/agent-1/db/1.sql",
+                           "create table public.notes (id int);\n")
+        findings = self.project.audit().findings
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0].path, os.path.join("db", "1.sql"))
+
     def test_build_output_is_skipped(self):
         self.project.write(".next/static/chunk.js", "const k = 'sb_secret_abcdefghijklmno';\n")
         self.project.write("node_modules/pkg/index.js", "const k = 'sb_secret_abcdefghijklmno';\n")

@@ -116,6 +116,11 @@ MAX_BYTES = 2_000_000
 def walk(root: str) -> Iterable[str]:
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = sorted(d for d in dirnames if d not in SKIP_DIRS and not d.startswith(".yarn"))
+        # Agent worktrees are copies of the same tree; scanning them reports the
+        # same migration once per worktree.
+        if os.path.join(".claude", "worktrees") in dirpath:
+            dirnames[:] = []
+            continue
         for name in sorted(filenames):
             yield os.path.join(dirpath, name)
 
