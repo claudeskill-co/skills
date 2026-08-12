@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        plugin: [rls-audit, token-screener, unit-economics]
+        plugin: [rls-audit, secret-sweep, token-screener, unit-economics]
         python-version: ["3.9", "3.11", "3.13"]
     steps:
       - uses: actions/checkout@v4
@@ -55,6 +55,9 @@ jobs:
       - name: rls-audit handles a directory that is not there
         working-directory: plugins/rls-audit
         run: python skills/rls-audit/scripts/rls_audit.py --path /nonexistent --strict
+      - name: secret-sweep handles a directory that is not there
+        working-directory: plugins/secret-sweep
+        run: python skills/secret-sweep/scripts/secret_sweep.py --path /nonexistent --strict
       - name: token-screener handles an empty transcript directory
         working-directory: plugins/token-screener
         run: python skills/token-screener/scripts/screen.py --root /nonexistent --all-projects

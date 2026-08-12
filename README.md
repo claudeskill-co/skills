@@ -60,9 +60,10 @@ zip, and their page says so rather than offering a download that would do nothin
 | Skill | What it does | Surfaces |
 |---|---|---|
 | [rls-audit](plugins/rls-audit) | Tables with row level security off, policies that let everyone through, keys the browser can read, paywalls enforced only in client code | CLI |
+| [secret-sweep](plugins/secret-sweep) | Credentials in source, in browser-exposed variables, in Docker and CI, and in git history after you deleted them | CLI |
 
-More landing here: `secret-sweep`, `db-guard`, `stripe-check`, `deploy-check`,
-and `ship-check` to run the lot as one gate.
+More landing here: `db-guard`, `stripe-check`, `deploy-check`, and `ship-check`
+to run the lot as one gate.
 
 ### Everything else
 
