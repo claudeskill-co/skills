@@ -423,6 +423,54 @@ class TestAccessControl(ProjectCase):
         )
         self.assertEqual(self.project.codes(), ["API001"])
 
+    def test_a_health_check_reporting_presence_is_not_a_privileged_route(self):
+        """Naming the variable is not using it.
+
+        Found by running the suite over our own site: this exact pattern is
+        what deploy-check tells people to do instead of logging the value, so
+        flagging it made our own two tools contradict each other.
+        """
+        self.project.write(
+            "app/api/health/route.ts",
+            "export async function GET() {\n"
+            "  return Response.json({ ok: true,\n"
+            "    listConnected: Boolean(process.env.SUPABASE_URL "
+            "&& process.env.SUPABASE_SERVICE_ROLE_KEY) });\n"
+            "}\n",
+        )
+        self.assertEqual(self.project.codes(), [])
+
+    def test_a_guard_clause_on_presence_is_not_a_privileged_route(self):
+        self.project.write(
+            "app/api/status/route.ts",
+            "export async function GET() {\n"
+            "  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;\n"
+            "  if (!key) return new Response('unconfigured', { status: 503 });\n"
+            "  return new Response('ok');\n"
+            "}\n",
+        )
+        self.assertEqual(self.project.codes(), [])
+
+    def test_the_key_sent_as_a_credential_still_fires(self):
+        """The fix must not become a way to smuggle a real privileged route past it."""
+        self.project.write(
+            "app/api/subscribe/route.ts",
+            "export async function POST() {\n"
+            "  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;\n"
+            "  await fetch(url, { headers: { apikey: key, Authorization: `Bearer ${key}` } });\n"
+            "  return Response.json({ ok: true });\n"
+            "}\n",
+        )
+        self.assertEqual(self.project.codes(), ["API001"])
+
+    def test_auth_admin_still_fires(self):
+        self.project.write(
+            "app/api/users/route.ts",
+            "const c = supabase(process.env.SUPABASE_SERVICE_ROLE_KEY!);\n"
+            "export async function GET() { return Response.json(await c.auth.admin.listUsers()); }\n",
+        )
+        self.assertEqual(self.project.codes(), ["API001"])
+
     def test_only_one_gate_finding_per_file(self):
         self.project.write(
             "components/Many.tsx",
