@@ -14,12 +14,14 @@ Two invariants carry this tool, and both are locked here:
     in ten seconds will be dismissed, however true it is.
 """
 
+import io
 import json
 import os
 import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -276,6 +278,49 @@ class TestPermissivePolicies(ProjectCase):
         # No `for` clause means ALL in Postgres, so `using (true)` is a write hole.
         findings = self._with_policy('create policy "open" on public.notes using (true);\n')
         self.assertEqual([f.code for f in findings], ["RLS004"])
+
+
+class TestFixturePaths(ProjectCase):
+    """A deliberately broken sample is not a production defect.
+
+    Found by running ship-check over our own site, which ships a knowingly
+    vulnerable fixture to demonstrate these tools - and was graded BLOCKED
+    for it. secret-sweep and stripe-check already downgraded these paths;
+    rls-audit did not.
+    """
+
+    def test_schema_under_demo_is_downgraded_to_review(self):
+        self.project.write("demo/fixture/supabase/migrations/001.sql",
+                           "create table public.profiles (id uuid primary key);\n")
+        findings = self.project.audit().findings
+        self.assertTrue(findings)
+        self.assertEqual({f.severity for f in findings}, {ra.REVIEW})
+
+    def test_the_downgrade_says_why(self):
+        self.project.write("tests/fixtures/schema.sql",
+                           "create table public.profiles (id uuid primary key);\n")
+        finding = self.project.audit().findings[0]
+        self.assertIn("fixture or demo path", finding.detail)
+        self.assertEqual(finding.confidence, ra.HEURISTIC)
+
+    def test_a_real_migration_is_untouched(self):
+        self.project.write("supabase/migrations/001.sql",
+                           "create table public.profiles (id uuid primary key);\n")
+        self.assertEqual(self.project.audit().findings[0].severity, ra.CRITICAL)
+
+    def test_include_tests_restores_full_severity(self):
+        self.project.write("demo/fixture/supabase/migrations/001.sql",
+                           "create table public.profiles (id uuid primary key);\n")
+        report = ra.audit(str(self.project.root), include_tests=True)
+        self.assertEqual(report.findings[0].severity, ra.CRITICAL)
+
+    def test_a_downgraded_finding_never_fails_strict(self):
+        self.project.write("demo/fixture/supabase/migrations/001.sql",
+                           "create table public.profiles (id uuid primary key);\n")
+        buffer = io.StringIO()
+        with redirect_stdout(buffer):
+            code = ra.main(["--path", str(self.project.root), "--strict"])
+        self.assertEqual(code, 0)
 
 
 class TestSqlHelpers(unittest.TestCase):

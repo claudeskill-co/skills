@@ -269,6 +269,11 @@ TEST_PATH_RE = re.compile(
 )
 
 ENV_NAME_RE = re.compile(r"^\.env(?:\..*)?$")
+
+# An env file whose name says example, sample or template is documentation.
+# Committing one is correct, and a project may have several - `.env.example`
+# beside `.env.local.example` is a normal split.
+TEMPLATE_ENV_RE = re.compile(r"example|sample|template|defaults", re.I)
 DOCKERFILE_RE = re.compile(r"^Dockerfile(?:\..*)?$|^Containerfile$", re.IGNORECASE)
 CI_PATH_RE = re.compile(r"\.(?:github/workflows|gitlab-ci|circleci)/|\.gitlab-ci\.ya?ml$|"
                         r"^\.travis\.ya?ml$|^azure-pipelines\.ya?ml$")
@@ -553,7 +558,12 @@ def scan_git_hygiene(root: str, report: Report) -> set:
         name = os.path.basename(path)
         if not ENV_NAME_RE.match(name):
             continue
-        if name in (".env.example", ".env.sample", ".env.template"):
+        # A template documents what the project needs and is *meant* to be
+        # committed, so it can never be a "tracked env file" finding. Matching
+        # three exact names missed `.env.local.example`, which is the shape the
+        # Next.js reference implementation uses - and that repo was graded
+        # BLOCKED on this single false positive.
+        if TEMPLATE_ENV_RE.search(name):
             continue
 
         rel = os.path.relpath(path, root)

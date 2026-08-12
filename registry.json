@@ -162,6 +162,45 @@
       "source": "https://github.com/claudeskill-co/skills/tree/main/plugins/secret-sweep"
     },
     {
+      "slug": "ship-check",
+      "displayName": "Ship Check",
+      "summary": "One question, one answer: is this safe to launch?",
+      "signature": "4 scanners, 1 verdict, coverage stated every time",
+      "description": "Run the whole Ship-Safe suite and grade whether a project is safe to launch: access control, secrets, payments and deploy readiness in one merged report with one verdict, and an explicit statement of what was and was not checked. Local files only - no network.",
+      "category": "security",
+      "audience": [
+        "developer"
+      ],
+      "surfaces": [
+        "cli"
+      ],
+      "tier": "free",
+      "featured": true,
+      "version": "1.0.0",
+      "highlights": [
+        "Runs access control, secrets, payments and deploy readiness, then grades the result",
+        "A scanner that is not installed did not pass - it did not run, and a partial run is never graded clear",
+        "Only proven findings can block. Pattern matches raise the verdict and say so, because being loudly wrong gets a tool switched off",
+        "One finding per place, not one per tool that noticed it - two scanners agreeing is not two problems"
+      ],
+      "requires": "python3 (already on macOS and Linux), plus whichever Ship-Safe scanners you have installed. No network.",
+      "notes": "A CLEAR verdict does not mean safe - it means four scanners found nothing proven. It cannot see your hosting dashboard, it cannot tell you whether your database has a backup, and it stops being true at your next deploy.",
+      "skills": [
+        {
+          "name": "ship-check",
+          "description": "Run the whole Ship-Safe suite and grade whether a project is safe to launch - access control, secrets, payments and deploy readiness in one report with one verdict. Use when the user asks whether their app is ready, safe to launch, safe to deploy or safe to go live, wants a security or pre-launch audit, says they are shipping today, or asks for a full check rather than one specific thing.",
+          "zip": null
+        }
+      ],
+      "install": {
+        "marketplace": "claudeskill",
+        "marketplaceAdd": "/plugin marketplace add claudeskill-co/skills",
+        "pluginInstall": "/plugin install ship-check@claudeskill",
+        "zip": null
+      },
+      "source": "https://github.com/claudeskill-co/skills/tree/main/plugins/ship-check"
+    },
+    {
       "slug": "stripe-check",
       "displayName": "Stripe Check",
       "summary": "Find the payment defects that cost money quietly, before real cards hit them.",
